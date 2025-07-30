@@ -1,4 +1,0 @@
-{"event": "Successfull login attempt : user1", "level": "info", "timestamp": "2025-07-30T09:14:43.352661Z"}
-{"event": "selected view profile : user1, by user : user1", "level": "info", "timestamp": "2025-07-30T09:14:56.252344Z"}
-{"event": "user1 : read all employee dept", "level": "info", "timestamp": "2025-07-30T09:15:08.512651Z"}
-{"event": "user1 : created EmployeeDept report d72d16b4-31a8-4214-b0b7-bd5a5e7c8cf8", "level": "info", "timestamp": "2025-07-30T09:15:51.810274Z"}
