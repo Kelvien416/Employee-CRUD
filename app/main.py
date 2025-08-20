@@ -8,7 +8,7 @@ from typing import Annotated
 import app.logconfig as logconfig
 
 #pandaCSV
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 import pandas as pd
 import uuid
 from jinja2 import Environment, FileSystemLoader
@@ -22,26 +22,48 @@ log = logconfig.log_config()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    credential_exception = HTTPException(
-        status_code = status.HTTP_401_UNAUTHORIZED,
-        detail = "Invalid credentials",
-        headers = {"WWW-Authenticate": "Bearer"}
-    )  
 
+
+# async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+#     credential_exception = HTTPException(
+#         status_code = status.HTTP_401_UNAUTHORIZED,
+#         detail = "Invalid credentials",
+#         headers = {"WWW-Authenticate": "Bearer"}
+#     )  
+
+
+#     try:
+#         payload = auth.decode_token(token)
+#         username: str = payload.get("sub")
+#         if username is None:
+#             raise credential_exception
+#     except JWTError:
+#         raise credential_exception
+#     user = crud.get_user_by_username(db, username)
+#     if user is None:
+#         raise credential_exception
+#     return user
+
+
+from fastapi import Request
+
+async def get_current_user(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("jwt_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     try:
         payload = auth.decode_token(token)
         username: str = payload.get("sub")
         if username is None:
-            raise credential_exception
+            raise HTTPException(status_code=401, detail="Invalid credentials")
     except JWTError:
-        raise credential_exception
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     user = crud.get_user_by_username(db, username)
     if user is None:
-        raise credential_exception
+        raise HTTPException(status_code=401, detail="User not found")
     return user
-
 
 @app.post("/register")
 async def register(user:schemas.UserCreate, db: Session = Depends(get_db)):
@@ -59,7 +81,21 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db:Session = D
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     access_token = auth.create_access_token(data={"sub": user.user_name})
     log.info(f"Successfull login attempt : {user.user_name}")
-    return {"access_token": access_token, "token_type": "bearer"}
+#    return {"access_token": access_token, "token_type": "bearer"}
+
+######################
+    response = JSONResponse(content={"message": "Login successful"})
+    response.set_cookie(
+        key="jwt_token",
+        value=access_token,
+        httponly=True,       # JS cannot access cookie (XSS protection)
+        secure=True,         # only send over HTTPS
+        samesite="lax",      # adjust depending on frontend needs
+        max_age=3600         # 1 hour expiry
+    )
+    return response
+
+######################
 
 
 @app.get("/logtest")

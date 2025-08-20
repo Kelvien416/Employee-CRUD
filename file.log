@@ -1,0 +1,4 @@
+{"event": "Successfull login attempt : user1", "level": "info", "timestamp": "2025-08-20T09:25:00.781898Z"}
+{"event": "user1 : get all department data", "level": "info", "timestamp": "2025-08-20T09:25:04.342849Z"}
+{"event": "user1 : get all department data", "level": "info", "timestamp": "2025-08-20T09:29:52.575145Z"}
+{"event": "user1 : get all department data", "level": "info", "timestamp": "2025-08-20T09:30:00.817588Z"}
